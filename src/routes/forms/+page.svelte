@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-
+	import { fade, fly } from 'svelte/transition';
+	import { elasticOut } from 'svelte/easing';
+	import { flip } from 'svelte/animate';
 	let canvasElement: HTMLCanvasElement;
 
 	onMount(() => {
@@ -53,6 +55,9 @@
 	let files: any = [];
 
 	let text_visible = true;
+	let text_transition = true;
+	let fly_status: string = 'idle';
+	let list: string[] = ['cheval', 'chien', 'chat', 'écureuil'];
 
 	const btn_is_active = true;
 
@@ -62,6 +67,18 @@
 		user.files = files;
 		console.log('user', user);
 	}
+
+	function whoosh(node: HTMLElement, { delay = 0, duration = 400, easing = elasticOut }: any = {}) {
+		const existingTransform = getComputedStyle(node).transform.replace('none', '');
+
+		return {
+			delay,
+			duration,
+			easing,
+			css: (t: number, u: number) => `opacity: ${t}; transform: ${existingTransform} scale(${t});`
+		};
+	}
+
 	function handleSubmit(event: Event) {
 		event.preventDefault();
 		console.log('submitted');
@@ -70,6 +87,11 @@
 		const target = event.target as HTMLInputElement;
 		const files = target.files;
 		console.log('files', files);
+	}
+
+	function shuffle() {
+		// Mélanger aléatoirement la liste
+		list = list.sort(() => Math.random() - 0.5);
 	}
 
 	function textAction(node: HTMLElement, text_with_use_action: string) {
@@ -186,6 +208,45 @@
 	</div>
 
 	{#if text_visible}<p use:textAction={text_with_use_action} /> {/if}
+
+	<button
+		type="button"
+		style="width: fit-content;"
+		on:click={() => (text_transition = !text_transition)}
+	>
+		toggle transition on/off
+	</button>
+	{#if text_transition}<p transition:fade={{ duration: 2000 }}>Texte fade duration 2s</p> {/if}
+	{#if text_transition}<p transition:fade>Texte fade</p> {/if}
+	{#if text_transition}<p in:whoosh>Texte whoosh</p> {/if}
+
+	{#if text_transition}
+		<p
+			transition:fly={{ y: 200, duration: 2000 }}
+			on:introstart={() => (fly_status = 'intro started')}
+			on:outrostart={() => (fly_status = 'outro started')}
+			on:introend={() => (fly_status = 'intro ended')}
+			on:outroend={() => (fly_status = 'outro ended')}
+		>
+			Flies in and out {fly_status}
+		</p>
+	{/if}
+
+	{#if text_transition}
+		<div in:fly out:fade>flies in, fades out</div>
+	{/if}
+
+	<button type="button" style="width: fit-content;" on:click={() => shuffle()}>
+		Shuffle items
+	</button>
+	<!-- When `list` is reordered the animation will run | NOT for insert/delete -->
+	{#if list?.length > 0}
+		<ul>
+			{#each list as item, index (item)}
+				<li animate:flip={{ delay: 300 }}>{item}</li>
+			{/each}
+		</ul>
+	{/if}
 </form>
 
 <!-- Use 'this' to bind 'canvasElement' to the canvas element -->
