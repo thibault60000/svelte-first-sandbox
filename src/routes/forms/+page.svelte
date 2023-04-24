@@ -3,6 +3,8 @@
 	import { fade, fly } from 'svelte/transition';
 	import { elasticOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
+	import Card from '../../components/Card.svelte';
+	import FancyList from '../../components/FancyList.svelte';
 	let canvasElement: HTMLCanvasElement;
 
 	onMount(() => {
@@ -247,6 +249,27 @@
 			{/each}
 		</ul>
 	{/if}
+
+	<p style="font-weight: bold">Cards :</p>
+	<Card>
+		<h4 slot="title">Blog Post Title</h4>
+	</Card>
+	<Card>
+		<h4 slot="title">Blog Post Title</h4>
+		<p slot="description">It's a description paragraph</p>
+		<!-- svelte.fragment don't break the layout (ex: flex) -->
+		<svelte:fragment slot="footer">
+			<p>All rights reserved.</p>
+			<p>Copyright (c) 2019 Svelte Industries</p>
+		</svelte:fragment>
+	</Card>
+
+	<p style="font-weight: bold">FancyList</p>
+	<FancyList items={list}>
+		<!-- Assign item on slot with 'let' -->
+		<div slot="item" let:item>{item}</div>
+		<p slot="footer">Copyright (c) 2019 Svelte Industries</p>
+	</FancyList>
 </form>
 
 <!-- Use 'this' to bind 'canvasElement' to the canvas element -->
